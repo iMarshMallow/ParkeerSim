@@ -1,7 +1,5 @@
 //package Parkeersimulator;
 
-//test666
-
 import java.util.Random;
 
 public class Simulator {
