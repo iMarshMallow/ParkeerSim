@@ -9,13 +9,13 @@ public class SimulatorView extends JFrame {
     private int numberOfRows;
     private int numberOfPlaces;
     private int numberOfOpenSpots;
-    private Simulator simulator;
     private Car[][][] cars;
-
+    
     public SimulatorView(int numberOfFloors, int numberOfRows, int numberOfPlaces) {
         this.numberOfFloors = numberOfFloors;
         this.numberOfRows = numberOfRows;
         this.numberOfPlaces = numberOfPlaces;
+        this.numberOfOpenSpots =numberOfFloors*numberOfRows*numberOfPlaces;
         cars = new Car[numberOfFloors][numberOfRows][numberOfPlaces];
         
         carParkView = new CarParkView();
@@ -27,12 +27,12 @@ public class SimulatorView extends JFrame {
 
         updateView();
     }
-
+    
     public void updateView() {
         carParkView.updateView();
     }
-
-    public int getNumberOfFloors() {
+    
+	public int getNumberOfFloors() {
         return numberOfFloors;
     }
 
@@ -44,6 +44,10 @@ public class SimulatorView extends JFrame {
         return numberOfPlaces;
     }
 
+    public int getNumberOfOpenSpots(){
+    	return numberOfOpenSpots;
+    }
+    
     public Car getCarAt(Location location) {
         if (!locationIsValid(location)) {
             return null;
@@ -59,6 +63,7 @@ public class SimulatorView extends JFrame {
         if (oldCar == null) {
             cars[location.getFloor()][location.getRow()][location.getPlace()] = car;
             car.setLocation(location);
+            numberOfOpenSpots--;
             return true;
         }
         return false;
@@ -74,6 +79,7 @@ public class SimulatorView extends JFrame {
         }
         cars[location.getFloor()][location.getRow()][location.getPlace()] = null;
         car.setLocation(null);
+        numberOfOpenSpots++;
         return car;
     }
 
@@ -181,39 +187,23 @@ public class SimulatorView extends JFrame {
                 carParkImage = createImage(size.width, size.height);
             }
             Graphics graphics = carParkImage.getGraphics();
-            for (int floor = 0; floor < getNumberOfFloors(); floor++) {
-				for (int row = 0; row < getNumberOfRows(); row++) {
-					for (int place = 0; place < getNumberOfPlaces(); place++) {
-						Location location = new Location(floor, row, place);
-						Car car = getCarAt(location);
-                        if(car == null) {
-							if ((floor == 2) && (row > 3)) {
-								Color color = Color.GRAY;
-								drawPlace(graphics, location, color);
-							} else {
-								Color color = Color.white;
-								drawPlace(graphics, location, color);
-							}
-						} else {
-							if (car instanceof AdHocCar) {
-								if (car.hasParkPass()) {
-									Color color = Color.blue;
-									drawPlace(graphics, location, color);
-								} else {
-									Color color = Color.red;
-									drawPlace(graphics, location, color);
-								}
-							} else if (car instanceof ReservCar) {
-								Color color = Color.green;
-								drawPlace(graphics, location, color);
-							}
-						}
-					}
-				}	
-			}
-			
-			repaint();
-		}
+            for(int floor = 0; floor < getNumberOfFloors(); floor++) {
+                for(int row = 0; row < getNumberOfRows(); row++) {
+                    for(int place = 0; place < getNumberOfPlaces(); place++) {
+                        Location location = new Location(floor, row, place);
+                        Car car = getCarAt(location);
+                        if ((floor == 2) && (row > 3)) {
+                        	Color color = car == null ? Color.GRAY : car.getColor();
+							drawPlace(graphics, location, color);
+                        } else {
+                        Color color = car == null ? Color.white : car.getColor();
+                        drawPlace(graphics, location, color);
+                        }
+                    }
+                }
+            }
+            repaint();
+        }
     
         /**
          * Paint a place on this car park view in a given color.
@@ -226,4 +216,6 @@ public class SimulatorView extends JFrame {
                     20 - 1,
                     10 - 1); // TODO use dynamic size or constants
         }
-    }}
+    }
+
+}
